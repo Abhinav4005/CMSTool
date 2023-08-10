@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Blog Management Tool</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>My Blog</h1>
+  </header>
+  <div class="container">
+    <aside>
+      <h2>Recent Posts</h2>
+      <ul id="recentPosts">
+        <!-- Recent posts will be dynamically added here -->
+      </ul>
+    </aside>
+    <main>
+      <h2>Add New Post</h2>
+      <input type="text" id="titleInput" placeholder="Enter title...">
+      <input type="text" id="imageInput" placeholder="Enter image URL...">
+      <textarea id="contentInput" placeholder="Enter content..."></textarea>
+      <button onclick="addContent()">Add Post</button>
+      <h2>All Posts</h2>
+      <ul id="contentList">
+        <!-- Content items will be dynamically added here -->
+      </ul>
+    </main>
+  </div>
+  <script src="script.js"></script>
+
+
+<script>
+  const contentList = document.getElementById('contentList');
+  const addContentForm = document.getElementById('addContentForm');
+
+  // Function to fetch content items from the backend and render them
+  async function fetchContentItems() {
+    const response = await fetch('backend.php');
+    const contentItems = await response.json();
+
+    contentList.innerHTML = '';
+    contentItems.forEach((content, index) => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <h3>${content.title}</h3>
+        <img src="${content.image}" alt="${content.title}">
+        <p>${content.content}</p>
+        <button onclick="deleteContent(${index})">Delete</button>
+      `;
+      contentList.appendChild(li);
+    });
+  }
+
+  // Function to add a new content item
+  async function addContent(event) {
+    event.preventDefault();
+    const formData = new FormData(addContentForm);
+    const response = await fetch('backend.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (response.ok) {
+      fetchContentItems();
+      addContentForm.reset();
+    }
+  }
+
+  // Function to delete a content item
+  async function deleteContent(index) {
+    const response = await fetch(`backend.php?index=${index}`, {
+      method: 'DELETE'
+    });
+
+    if (response.ok) {
+      fetchContentItems();
+    }
+  }
+
+  // Fetch and render content items on page load
+  fetchContentItems();
+
+  // Add event listener for form submission
+  addContentForm.addEventListener('submit', addContent);
+</script>
+
+
+</body>
+</html>
